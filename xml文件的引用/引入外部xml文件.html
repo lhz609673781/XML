@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>引入外部xml文件</title>
+</head>
+<body>
+	<p id="result"></p>
+	<script type="text/javascript">
+	var xmlDoc="";
+		function loadXML(file){
+			
+			//try...catch   测试代码中的错误
+			try{//ie
+				xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+				//asynchronzed   ->异步加载
+				xmlDoc.async=false;//将加载方式设为同步
+				xmlDoc.load(file);//将xml字符串解析成document
+			}catch(e){//容错处理
+				try{
+					//ff ,opera,mozilla,wekbit
+					xmlDoc=document.implementation.createDocument("","",null);
+					xmlDoc.async=false;
+					xmlDoc.load(file);//加载xml文件，形成文档树
+				}catch(e){
+					//谷歌
+					try{//创建一个请求对象
+						var xmlhttp=new window.XMLHttpRequest();
+						xmlhttp.open("GET",file,false);
+						xmlhttp.send(null);
+						xmlDoc=xmlhttp.responseXML.documentElement;
+					}
+					catch(e)
+					{
+						alert("您的浏览器不能正常加载文件。请切换到兼容模式或更换浏览器")
+					}
+				}
+			}
+			return xmlDoc;
+		}
+
+
+		var xmlDOM=loadXML("data.xml");
+		var xslDOM=loadXML("xsl.xml");
+
+
+//将两个文件以HTML的形式输出
+		if('\v'=='v'){
+			var resultDocument=xmlDOM.transformNode(xslDOM);
+			document.getElementById("result").innerHTML=resultDocument;
+		}else if(document.implementation && document.implementation.createDocument){
+			xsltProcessor=new XSLTProcessor();
+			xsltProcessor.importStylesheet(xslDOM);
+			var resultDocument=xsltProcessor.transformToFragment(xmlDOM,document);
+			document.getElementById("result").appendChild(resultDocument);
+		}
+	</script>
+</body>
+</html>

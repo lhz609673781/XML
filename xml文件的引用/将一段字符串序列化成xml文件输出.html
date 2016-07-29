@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>将一段字符串序列化成xml文件输出</title>
+</head>
+<body>
+	<p id="result"></p>
+
+	<script type="text/javascript">
+		function parseXML(str){
+			//创建DOM解析器
+			var xmlDoc;
+			//try...catch   测试代码中的错误
+			try{//ie
+				xmlDoc=new ActiveXobject("Microsoft.XMLDOM");
+				//asynchronzed   ->异步加载
+				xmlDoc.async=false;//将加载方式设为同步
+				xmlDoc.loadXML(str);//将xml字符串解析成document
+			}catch(e){//容错处理
+				try{
+					//ff ,opera,mozilla,wekbit
+					//创建一个解析器
+					var parser=new DOMParser();
+					xmlDoc=parser.parseFromString(str,"text/xml");
+				}catch(x){
+					alert(x.message);//报错  不支持以上浏览器
+					return;
+				}
+			}
+			return xmlDoc;
+		}
+
+		var xmlStr="<customer><name>张三</name><birthdata>March 10,1996</birthdata><email>abc@qq.com</email><phone>13575298146</phone></customer>"
+
+		var XMLDOM=parseXML(xmlStr);
+		//将字符串 xmlStr 变成Xml document对象
+		var xmlDOM=parseXML(xmlStr);
+		document.getElementById("result").innerHTML=xmlDOM.getElementsByTagName("name")[0].childNodes[0].nodeValue;
+
+
+		//将xml document对象转为 string 字符串
+		if(xmlDOM.xml){//ie
+			document.getElementById("result").innerHTML=xmlDOM.xml;
+		}else{//ff
+			var serializer=new XMLSerializer();
+			document.getElementById("result").innerHTML=serializer.serializeToString(xmlDOM,"text/xml");
+		}
+
+		
+	</script>
+</body>
+</html>

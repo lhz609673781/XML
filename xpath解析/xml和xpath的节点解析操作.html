@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>xml和xpath的节点解析操作</title>
+</head>
+
+<body>
+	<p id="result"></p>
+
+	<script type="text/javascript">
+		function parseXML(str){
+			//创建DOM解析器
+			var xmlDoc;
+			//try...catch   测试代码中的错误
+			try{//ie
+				xmlDoc=new ActiveXobject("Microsoft.XMLDOM");
+				//asynchronzed   ->异步加载
+				xmlDoc.async=false;//将加载方式设为同步
+				xmlDoc.loadXML(str);//将xml字符串解析成document
+			}catch(e){//容错处理
+				try{
+					//ff ,opera,mozilla,wekbit
+					//创建一个解析器
+					var parser=new DOMParser();
+					xmlDoc=parser.parseFromString(str,"text/xml");
+				}catch(x){
+					alert(x.message);//报错  不支持以上浏览器或以上程序出错
+					return;
+				}
+			}
+			return xmlDoc;
+		}
+
+		var xmlStr="<customers><customer id='1'><name>张三</name><birthdata>March 10,1996</birthdata><email>abc@qq.com</email><phone>13575298146</phone></customer><customer id='2'><name>李三</name><birthdata>March 10,1996</birthdata><email>abc@qq.com</email><phone>13575298146</phone></customer><customer id='3'><name>王三</name><birthdata>March 10,1996</birthdata><email>abc@qq.com</email><phone>13575298146</phone></customer></customers>"
+
+		var xmlDOM=parseXML(xmlStr);
+		//XPath  根据节点路径查询xml节点
+		function selectXMLNodes(xmlDoc,xpath){
+			if('\v'=='v'){
+				//ie
+				xmlDoc.setProperty("SelectionLanguage","XPath");//一定要先设置
+				return xmlDoc.documentElement.selectNodes(xpath);//直接根据这个路径查到节点
+			}else{
+				var evaluator=new XPathEvaluator();
+				//                                                     按节点顺序解析
+				var resultSet=evaluator.evaluate(xpath,xmlDoc,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE,null);
+				//通过xpath解析的结果是一个集合
+				var finalArray=[];
+				if(resultSet){
+					var el=resultSet.iterateNext();//循环得到的结果
+					while(el){
+						finalArray.push(el);
+						el=resultSet.iterateNext();//继续循环
+					}
+					return finalArray;
+				}
+			}
+		}
+		var nodeList=selectXMLNodes(xmlDOM,'/customers/customer[@id=\"1\"]')//xpath
+		alert(nodeList[0].innerHTML);
+
+
+
+
+		//封装xml DOM模式下查找固定id号的节点
+		function getElementByIdXML(rootnode,id){
+			nodeTags=rootnode.getElementsByTagName("*");
+			for(var i=0;i<nodeTags.length;i++){
+				if(nodeTags[i].hasAttribute('id')){
+					if(nodeTags[i].getAttribute('id')==id)
+						return nodeTags[i];
+				}
+			}
+		}
+
+		var customerNode=getElementByIdXML(xmlDOM,"2");//定义元素节点
+
+
+
+
+
+		//输出元素节点
+		if(customerNode){
+			if(xmlDOM.xml){ //ie
+			document.getElementById("result").innerHTML=xmlDOM.xml;
+		}else{
+			var serializer=new XMLSerializer();
+			document.getElementById("result").innerHTML=serializer.serializeToString(xmlDOM,"text/xml");
+		}
+		}
+		
+	</script>
+</body>
+</html>
